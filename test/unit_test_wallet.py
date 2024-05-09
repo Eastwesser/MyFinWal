@@ -7,15 +7,28 @@ from main import FinanceManager
 
 
 class TestFinanceManager(unittest.TestCase):
+    """
+    Класс, содержащий юнит-тесты для проверки функционала класса FinanceManager.
+    """
+
     def setUp(self):
+        """
+        Подготовка тестовой среды перед запуском каждого теста.
+        """
         self.filename = "test_finance_records.csv"
         self.manager = FinanceManager(self.filename)
 
     def tearDown(self):
+        """
+        Очистка тестовой среды после выполнения каждого теста.
+        """
         if os.path.exists(self.filename):
             os.remove(self.filename)
 
     def test_show_wallet_balance(self):
+        """
+        Тестирование функции вывода баланса кошелька.
+        """
         # Arrange
         mock_data = "Date,Category,Amount,Description\n"
         with patch("builtins.open", mock_open(read_data=mock_data)):
@@ -25,10 +38,17 @@ class TestFinanceManager(unittest.TestCase):
                 output = mock_stdout.getvalue()
 
             # Assert
-            expected_output = "Баланс: 0\nДоходы: 0\nРасходы: 0\n"
+            expected_output = (
+                "Баланс: 0\n"
+                "Доходы: 0\n"
+                "Расходы: 0\n"
+            )
             self.assertEqual(output, expected_output)
 
     def test_add_record(self):
+        """
+        Тестирование функции добавления записи о финансовой операции.
+        """
         # Arrange
         date = "2024-05-03"
         category = "Income"
@@ -40,12 +60,15 @@ class TestFinanceManager(unittest.TestCase):
 
         # Assert
         df = pd.read_csv(self.filename, names=["Date", "Category", "Amount", "Description"])
-        df["Date"] = pd.to_datetime(df["Date"])  # Convert "Date" column to datetime
+        df["Date"] = pd.to_datetime(df["Date"])  # Преобразование столбца "Date" в формат datetime
         self.assertEqual(len(df), 1)
         self.assertTrue((df["Date"].dt.date == pd.Timestamp(date).date()).any())
 
     def test_edit_record(self):
-        # Arrange
+        """
+        Тестирование функции редактирования записи о финансовой операции.
+        """
+        # Устанавливаем начальные данные для теста
         mock_data = "Date,Category,Amount,Description\n2024-05-01,Income,1000,Salary"
         with patch("builtins.open", mock_open(read_data=mock_data)):
             new_date = "2024-05-02"
@@ -53,22 +76,31 @@ class TestFinanceManager(unittest.TestCase):
             new_amount = 500
             new_description = "Rent"
 
-            # Act
+            # Действие: вызываем функцию редактирования записи
             self.manager.edit_record(0, new_date, new_category, new_amount, new_description)
 
-            # Assert
+            # Получаем данные из CSV файла после редактирования
             df = pd.read_csv(self.filename)
-            df["Date"] = pd.to_datetime(df["Date"])  # Convert "Date" column to datetime
+            df["Date"] = pd.to_datetime(df["Date"])  # Преобразуем столбец "Date" в формат datetime
+
+            # Проверяем ожидаемый результат после редактирования записи
             self.assertEqual(len(df), 1)
-            expected_date = pd.Timestamp(2024, 5, 2)  # Update the expected date
-            self.assertEqual(df.iloc[0]["Date"], expected_date)
+            self.assertEqual(df.iloc[0]["Date"], pd.Timestamp(new_date))
             self.assertEqual(df.iloc[0]["Category"], new_category)
             self.assertEqual(df.iloc[0]["Amount"], new_amount)
             self.assertEqual(df.iloc[0]["Description"], new_description)
 
     def test_search_records(self):
+        """
+        Тестирование функции поиска записей в журнале финансовых операций.
+        """
         # Arrange
-        mock_data = "Date,Category,Amount,Description\n2024-05-01,Income,1000,Salary\n2024-05-02,Expense,500,Rent\n2024-05-03,Income,2000,Freelance work"
+        mock_data = (
+            "Date,Category,Amount,Description\n"
+            "2024-05-01,Income,1000,Salary\n"
+            "2024-05-02,Expense,500,Rent\n"
+            "2024-05-03,Income,2000,Freelance work"
+        )
         with patch("builtins.open", mock_open(read_data=mock_data)):
             # Act
             income_records = self.manager.search_records(category="Income")

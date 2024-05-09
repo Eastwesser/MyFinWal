@@ -64,9 +64,10 @@ class FinanceManager:
         """
         try:
             df = pd.read_csv(self.filename, parse_dates=['Date'])
+            df['Date'] = pd.to_datetime(df['Date'])  # Convert "Date" column to datetime
 
             if record_id < len(df):
-                df.at[record_id, 'Date'] = new_date
+                df.at[record_id, 'Date'] = pd.to_datetime(new_date)
                 df.at[record_id, 'Category'] = new_category
                 df.at[record_id, 'Amount'] = new_amount
                 df.at[record_id, 'Description'] = new_description
