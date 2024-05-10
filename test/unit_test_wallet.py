@@ -95,17 +95,17 @@ class TestFinanceManager(unittest.TestCase):
         mock_data = (
             "Дата:2023-05-01\n"
             "Категория:Доход\n"
-            "Сумма:1000\n"
+            "Сумма:1000.0\n"  # Изменение суммы на float
             "Описание:Зарплата\n"
 
             "Дата:2023-05-02\n"
             "Категория:Расход\n"
-            "Сумма:500\n"
+            "Сумма:500.0\n"  # Изменение суммы на float
             "Описание:Покупки\n"
 
             "Дата:2023-05-03\n"
             "Категория:Доход\n"
-            "Сумма:1500\n"
+            "Сумма:1500.0\n"  # Изменение суммы на float
             "Описание:Фриланс\n"
         )
 
@@ -115,9 +115,20 @@ class TestFinanceManager(unittest.TestCase):
         category = "Доход"
         expected_df = pd.DataFrame({"Date": [pd.to_datetime("2023-05-01"), pd.to_datetime("2023-05-03")],
                                     "Category": ["Доход", "Доход"],
-                                    "Amount": [1000, 1500],
+                                    "Amount": [1000.0, 1500.0],
                                     "Description": ["Зарплата", "Фриланс"]})
         result_df = self.manager.search_records(category=category)
+
+        # Resetting index before comparison
+        expected_df.reset_index(drop=True, inplace=True)
+        result_df.reset_index(drop=True, inplace=True)
+
+        print("Expected DataFrame:")
+        print(expected_df)
+
+        print("Result DataFrame:")
+        print(result_df)
+
         self.assertTrue(result_df.equals(expected_df))
 
 

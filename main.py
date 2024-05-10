@@ -21,10 +21,10 @@ class FinanceManager:
                         amount = float(line.split(':')[1].strip())
                     elif line.startswith('Описание:'):
                         description = line.split(':')[1].strip()
-                        data.append([date, category, amount, description])
+                        data.append({'Date': date, 'Category': category, 'Amount': amount, 'Description': description})
 
                 if data:
-                    df = pd.DataFrame(data, columns=['Date', 'Category', 'Amount', 'Description'])
+                    df = pd.DataFrame(data)
                 else:
                     df = pd.DataFrame(columns=['Date', 'Category', 'Amount', 'Description'])
 
