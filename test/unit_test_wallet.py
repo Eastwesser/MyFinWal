@@ -1,117 +1,123 @@
-import io
 import unittest
 import os
-import pandas as pd
+import tempfile
 from unittest.mock import patch, mock_open
+import pandas as pd
 from main import FinanceManager
 
 
 class TestFinanceManager(unittest.TestCase):
-    """
-    Класс, содержащий юнит-тесты для проверки функционала класса FinanceManager.
-    """
 
     def setUp(self):
-        """
-        Подготовка тестовой среды перед запуском каждого теста.
-        """
-        self.filename = "test_finance_records.csv"
+        self.temp_file = tempfile.NamedTemporaryFile(delete=False)
+        self.temp_file.close()
+        self.filename = self.temp_file.name
         self.manager = FinanceManager(self.filename)
 
     def tearDown(self):
-        """
-        Очистка тестовой среды после выполнения каждого теста.
-        """
-        if os.path.exists(self.filename):
-            os.remove(self.filename)
+        os.remove(self.temp_file.name)
 
-    def test_show_wallet_balance(self):
-        """
-        Тестирование функции вывода баланса кошелька.
-        """
-        # Arrange
-        mock_data = "Date,Category,Amount,Description\n"
+    def test_load_data(self):
+        self.assertTrue(self.manager.df.empty)
+
+        mock_data = (
+            "Дата:2023-05-01\n"
+            "Категория:Доход\n"
+            "Сумма:1000\n"
+            "Описание:Зарплата\n"
+        )
+
         with patch("builtins.open", mock_open(read_data=mock_data)):
-            # Act
-            with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
-                self.manager.show_wallet_balance()
-                output = mock_stdout.getvalue()
+            self.manager.load_data()
+            self.assertEqual(len(self.manager.df), 1)
 
-            # Assert
-            expected_output = (
-                "Баланс: 0\n"
-                "Доходы: 0\n"
-                "Расходы: 0\n"
-            )
-            self.assertEqual(output, expected_output)
-
-    def test_add_record(self):
-        """
-        Тестирование функции добавления записи о финансовой операции.
-        """
-        # Arrange
-        date = "2024-05-03"
-        category = "Income"
+    def test_add_entry(self):
+        date = "2023-06-01"
+        category = "Доход"
         amount = 2000
-        description = "Freelance work"
+        description = "Фриланс"
 
-        # Act
-        self.manager.add_record(date, category, amount, description)
-
-        # Assert
-        df = pd.read_csv(self.filename, names=["Date", "Category", "Amount", "Description"])
-        df["Date"] = pd.to_datetime(df["Date"])  # Преобразование столбца "Date" в формат datetime
-        self.assertEqual(len(df), 1)
-        self.assertTrue((df["Date"].dt.date == pd.Timestamp(date).date()).any())
+        self.manager.add_entry(date, category, amount, description)
+        self.assertEqual(len(self.manager.df), 1)
+        self.assertEqual(self.manager.df.iloc[0]["Date"], pd.to_datetime(date))
+        self.assertEqual(self.manager.df.iloc[0]["Category"], category)
+        self.assertEqual(self.manager.df.iloc[0]["Amount"], amount)
+        self.assertEqual(self.manager.df.iloc[0]["Description"], description)
 
     def test_edit_record(self):
-        """
-        Тестирование функции редактирования записи о финансовой операции.
-        """
-        # Устанавливаем начальные данные для теста
-        mock_data = "Date,Category,Amount,Description\n2024-05-01,Income,1000,Salary"
+        mock_data = (
+            "Дата:2023-05-01\n"
+            "Категория:Доход\n"
+            "Сумма:1000\n"
+            "Описание:Зарплата\n"
+        )
+
         with patch("builtins.open", mock_open(read_data=mock_data)):
-            new_date = "2024-05-02"
-            new_category = "Expense"
-            new_amount = 500
-            new_description = "Rent"
+            self.manager.load_data()
 
-            # Действие: вызываем функцию редактирования записи
-            self.manager.edit_record(0, new_date, new_category, new_amount, new_description)
+        new_date = "2023-05-03"
+        new_category = "Расход"
+        new_amount = 1500
+        new_description = "Аренда"
+        index = 0
 
-            # Получаем данные из CSV файла после редактирования
-            df = pd.read_csv(self.filename)
-            df["Date"] = pd.to_datetime(df["Date"])  # Преобразуем столбец "Date" в формат datetime
+        self.manager.edit_record(index, new_date, new_category, new_amount, new_description)
+        self.assertEqual(self.manager.df.iloc[index]["Date"], pd.to_datetime(new_date))
+        self.assertEqual(self.manager.df.iloc[index]["Category"], new_category)
+        self.assertEqual(self.manager.df.iloc[index]["Amount"], new_amount)
+        self.assertEqual(self.manager.df.iloc[index]["Description"], new_description)
 
-            # Проверяем ожидаемый результат после редактирования записи
-            self.assertEqual(len(df), 1)
-            self.assertEqual(df.iloc[0]["Date"], pd.Timestamp(new_date))
-            self.assertEqual(df.iloc[0]["Category"], new_category)
-            self.assertEqual(df.iloc[0]["Amount"], new_amount)
-            self.assertEqual(df.iloc[0]["Description"], new_description)
+    def test_show_wallet_balance(self):
+        mock_data = (
+            "Дата:2023-05-01\n"
+            "Категория:Доход\n"
+            "Сумма:1000\n"
+            "Описание:Зарплата\n"
+            
+            "Дата:2023-05-02\n"
+            "Категория:Расход\n"
+            "Сумма:500\n"
+            "Описание:Покупки\n"
+        )
+
+        with patch("builtins.open", mock_open(read_data=mock_data)):
+            self.manager.load_data()
+
+        expected_balance, expected_income, expected_expenses = 500, 1000, 500
+        balance, income, expenses = self.manager.show_wallet_balance()
+
+        self.assertEqual(balance, expected_balance)
+        self.assertEqual(income, expected_income)
+        self.assertEqual(expenses, expected_expenses)
 
     def test_search_records(self):
-        """
-        Тестирование функции поиска записей в журнале финансовых операций.
-        """
-        # Arrange
         mock_data = (
-            "Date,Category,Amount,Description\n"
-            "2024-05-01,Income,1000,Salary\n"
-            "2024-05-02,Expense,500,Rent\n"
-            "2024-05-03,Income,2000,Freelance work"
+            "Дата:2023-05-01\n"
+            "Категория:Доход\n"
+            "Сумма:1000\n"
+            "Описание:Зарплата\n"
+            
+            "Дата:2023-05-02\n"
+            "Категория:Расход\n"
+            "Сумма:500\n"
+            "Описание:Покупки\n"
+            
+            "Дата:2023-05-03\n"
+            "Категория:Доход\n"
+            "Сумма:1500\n"
+            "Описание:Фриланс\n"
         )
-        with patch("builtins.open", mock_open(read_data=mock_data)):
-            # Act
-            income_records = self.manager.search_records(category="Income")
-            date_records = self.manager.search_records(date="2024-05-02")
-            amount_records = self.manager.search_records(amount=2000)
 
-            # Assert
-            self.assertEqual(len(income_records), 2)
-            self.assertEqual(len(date_records), 1)
-            self.assertEqual(len(amount_records), 1)
-            self.assertEqual(amount_records.iloc[0]["Description"], "Freelance work")
+        with patch("builtins.open", mock_open(read_data=mock_data)):
+            self.manager.load_data()
+
+        category = "Доход"
+        expected_df = pd.DataFrame({"Date": [pd.to_datetime("2023-05-01"), pd.to_datetime("2023-05-03")],
+                                    "Category": ["Доход", "Доход"],
+                                    "Amount": [1000, 1500],
+                                    "Description": ["Зарплата", "Фриланс"]})
+        result_df = self.manager.search_records(category=category)
+        self.assertTrue(result_df.equals(expected_df))
 
 
 if __name__ == "__main__":

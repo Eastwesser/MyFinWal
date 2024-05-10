@@ -19,7 +19,7 @@
 
 ## Требования к установке
 
-- Python 3.10
+- Python 3.10.11
 - Библиотека pandas
 
 ## Авторы
@@ -49,7 +49,7 @@ This project is a program for managing finances. The Finance Manager allows the 
 
 ## Installation Requirements
 
-- Python 3.10
+- Python 3.10.11
 - pandas library
 
 ## Author
