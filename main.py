@@ -1,13 +1,31 @@
-from typing import Optional
-import pandas as pd
+from typing import Optional  # Импортируем тип Optional для работы с необязательными аргументами
+import pandas as pd  # Импортируем библиотеку pandas для работы с DataFrame
 
 
 class FinanceManager:
     def __init__(self, filename: str):
+        """
+        Инициализация объекта FinanceManager.
+
+        Args:
+            filename (str): Путь к файлу данных.
+
+        Attributes:
+            filename (str): Путь к файлу данных.
+            df (pd.DataFrame): DataFrame для хранения финансовых данных.
+
+        """
         self.filename = filename
-        self.df = self.load_data()
+        self.df = self.load_data()  # Загружаем данные при инициализации объекта
 
     def load_data(self) -> pd.DataFrame:
+        """
+        Загружает данные из файла CSV в DataFrame.
+
+        Returns:
+            pd.DataFrame: DataFrame с загруженными данными или пустой DataFrame.
+
+        """
         try:
             with open(self.filename, 'r', encoding='utf-8') as file:
                 data = []
@@ -36,32 +54,63 @@ class FinanceManager:
             return self.df
 
     def save_data(self) -> None:
+        """
+        Сохраняет DataFrame в файл CSV.
+        """
         self.df.to_csv(self.filename, index=False)
 
     def add_entry(self, date: str, category: str, amount: float, description: str) -> None:
+        """
+        Добавляет новую запись о финансовой операции.
+
+        Args:
+            date (str): Дата операции в формате 'ГГГГ-ММ-ДД'.
+            category (str): Категория операции ('Доход' или 'Расход').
+            amount (float): Сумма операции.
+            description (str): Описание операции.
+
+        """
         try:
             new_id = len(self.df) + 1
             new_record = {'Date': pd.to_datetime(date), 'Category': category, 'Amount': amount,
                           'Description': description}
             self.df = pd.concat([self.df, pd.DataFrame([new_record])], ignore_index=True)
-            self.save_data()
+            self.save_data()  # Сохраняем изменения в файл
             print("Запись добавлена успешно.")
         except Exception as e:
             print("Ошибка при добавлении записи:", e)
 
     def edit_record(self, record_id: int, new_date: str, new_category: str, new_amount: float,
                     new_description: str) -> None:
+        """
+        Редактирует существующую запись о финансовой операции.
+
+        Args:
+            record_id (int): Идентификатор записи.
+            new_date (str): Новая дата операции в формате 'ГГГГ-ММ-ДД'.
+            new_category (str): Новая категория операции ('Доход' или 'Расход').
+            new_amount (float): Новая сумма операции.
+            new_description (str): Новое описание операции.
+
+        """
         if record_id in self.df.index:
             self.df.at[record_id, 'Date'] = new_date
             self.df.at[record_id, 'Category'] = new_category
             self.df.at[record_id, 'Amount'] = new_amount
             self.df.at[record_id, 'Description'] = new_description
-            self.save_data()
+            self.save_data()  # Сохраняем изменения в файл
             print("Запись успешно отредактирована.")
         else:
             print("Запись с таким ID не найдена.")
 
     def show_wallet_balance(self) -> tuple:
+        """
+        Отображает баланс кошелька и суммы доходов и расходов.
+
+        Returns:
+            tuple: Кортеж из трех элементов: баланс, сумма доходов, сумма расходов.
+
+        """
         if self.df.empty:
             print("Нет данных для отображения баланса.")
             return 0, 0, 0
@@ -78,6 +127,19 @@ class FinanceManager:
 
     def search_records(self, category: Optional[str] = None, date: Optional[str] = None,
                        amount: Optional[float] = None, record_id: Optional[int] = None) -> pd.DataFrame:
+        """
+        Выполняет поиск записей по заданным критериям.
+
+        Args:
+            category (Optional[str]): Категория для поиска.
+            date (Optional[str]): Дата для поиска.
+            amount (Optional[float]): Сумма для поиска.
+            record_id (Optional[int]): Идентификатор записи для поиска.
+
+        Returns:
+            pd.DataFrame: DataFrame с найденными записями.
+
+        """
         filtered_df = self.df.copy()
 
         if category is not None:
