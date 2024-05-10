@@ -28,11 +28,11 @@ class FinanceManager:
                 else:
                     df = pd.DataFrame(columns=['Date', 'Category', 'Amount', 'Description'])
 
-                self.df = df  # Update self.df with the loaded DataFrame
+                self.df = df  # Обновляем self.df загруженным DataFrame
                 return df
         except FileNotFoundError:
             columns = ['Date', 'Category', 'Amount', 'Description']
-            self.df = pd.DataFrame(columns=columns)  # Update self.df with an empty DataFrame
+            self.df = pd.DataFrame(columns=columns)  # Обновляем self.df пустым DataFrame
             return self.df
 
     def save_data(self) -> None:
@@ -84,7 +84,7 @@ class FinanceManager:
             filtered_df = filtered_df[filtered_df['Category'].str.lower() == category.lower()]
 
         if date is not None:
-            date = pd.to_datetime(date).date()  # Convert to date object
+            date = pd.to_datetime(date).date()
             filtered_df = filtered_df[filtered_df['Date'].dt.date == date]
 
         if amount is not None:

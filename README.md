@@ -22,6 +22,8 @@
 - Python 3.10.11
 - Библиотека pandas
 
+`$ pip install pandas`
+
 ## Авторы
 
 - Денис Матвеев
