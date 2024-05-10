@@ -25,12 +25,12 @@
 2. Редактировать запись
 3. Просмотреть баланс
 4. Поиск по записям
-Выберите операцию (1-4): **1**
+Выберите операцию (1-4): 1
 
-Введите дату (гггг-мм-дд): **2024-05-10**
-Выберите категорию (1 - Доход, 2 - Расход): **2**
-Введите сумму: **500**
-Введите описание: **Покупка продуктов**
+Введите дату (гггг-мм-дд): 2024-05-10
+Выберите категорию (1 - Доход, 2 - Расход): 2
+Введите сумму: 500
+Введите описание: Покупка продуктов
 
 Запись успешно добавлена!
 
@@ -39,7 +39,7 @@
 2. Редактировать запись
 3. Просмотреть баланс
 4. Поиск по записям
-Выберите операцию (1-4): **3**
+Выберите операцию (1-4): 3
 
 Текущий баланс:
 - Доход: $1000
@@ -49,8 +49,8 @@
 
 ## Требования к установке
 
-Python 3.10.11
-Библиотека pandas
+- Python 3.10.11
+- Библиотека pandas
 `$ pip install pandas`
 
 ## Автор
@@ -87,12 +87,12 @@ Available operations:
 2. Edit a record
 3. View balance
 4. Search for records
-Choose an operation (1-4): **1**
+Choose an operation (1-4): 1
 
-Enter the date (yyyy-mm-dd): **2024-05-10**
-Choose the category (1 - Income, 2 - Expense): **2**
-Enter the amount: **500**
-Enter the description: **Grocery shopping**
+Enter the date (yyyy-mm-dd): 2024-05-10
+Choose the category (1 - Income, 2 - Expense): 2
+Enter the amount: 500
+Enter the description: Grocery shopping
 
 Record successfully added!
 
@@ -101,7 +101,7 @@ Available operations:
 2. Edit a record
 3. View balance
 4. Search for records
-Choose an operation (1-4): **3**
+Choose an operation (1-4): 3
 
 Current balance:
 - Income: $1000
@@ -111,10 +111,10 @@ Current balance:
 
 ## Installation Requirements
 
-Python 3.10.11
-pandas library
+- Python 3.10.11
+- pandas library
 `$ pip install pandas`
 
-## Автор
+## Author
 
 - Dennis Mattews
