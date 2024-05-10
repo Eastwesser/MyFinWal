@@ -41,7 +41,8 @@ class FinanceManager:
     def add_entry(self, date: str, category: str, amount: float, description: str) -> None:
         try:
             new_id = len(self.df) + 1
-            new_record = {'Date': date, 'Category': category, 'Amount': amount, 'Description': description}
+            new_record = {'Date': pd.to_datetime(date), 'Category': category, 'Amount': amount,
+                          'Description': description}
             self.df = pd.concat([self.df, pd.DataFrame([new_record])], ignore_index=True)
             self.save_data()
             print("Запись добавлена успешно.")

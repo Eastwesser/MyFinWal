@@ -39,7 +39,8 @@ class TestFinanceManager(unittest.TestCase):
 
         self.manager.add_entry(date, category, amount, description)
         self.assertEqual(len(self.manager.df), 1)
-        self.assertEqual(self.manager.df.iloc[0]["Date"].date(), pd.to_datetime(date).date())
+        date_expected = pd.to_datetime(date).date()
+        self.assertEqual(self.manager.df.iloc[0]["Date"].date(), date_expected)
         self.assertEqual(self.manager.df.iloc[0]["Category"], category)
         self.assertEqual(self.manager.df.iloc[0]["Amount"], amount)
         self.assertEqual(self.manager.df.iloc[0]["Description"], description)
