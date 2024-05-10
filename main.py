@@ -4,26 +4,13 @@ import pandas as pd
 
 class FinanceManager:
     def __init__(self, filename: str):
-        """
-        Инициализация FinanceManager.
-
-        Args:
-            filename (str): Имя файла для хранения финансовых записей.
-        """
         self.filename = filename
         self.df = self.load_data()
 
     def load_data(self) -> pd.DataFrame:
-        """
-        Загружает данные из файла в DataFrame.
-
-        Returns:
-            pd.DataFrame: DataFrame с финансовыми записями.
-        """
         try:
             with open(self.filename, 'r', encoding='utf-8') as file:
                 data = []
-                date, category, amount, description = None, None, None, None
                 for line in file:
                     line = line.strip()
                     if line.startswith('Дата:'):
@@ -35,40 +22,27 @@ class FinanceManager:
                     elif line.startswith('Описание:'):
                         description = line.split(':')[1].strip()
                         data.append([date, category, amount, description])
-                        date, category, amount, description = None, None, None, None
 
-                df = pd.DataFrame(data, columns=['Date', 'Category', 'Amount', 'Description'])
+                if data:
+                    df = pd.DataFrame(data, columns=['Date', 'Category', 'Amount', 'Description'])
+                else:
+                    df = pd.DataFrame(columns=['Date', 'Category', 'Amount', 'Description'])
+
+                self.df = df  # Update self.df with the loaded DataFrame
                 return df
         except FileNotFoundError:
             columns = ['Date', 'Category', 'Amount', 'Description']
-            return pd.DataFrame(columns=columns)
+            self.df = pd.DataFrame(columns=columns)  # Update self.df with an empty DataFrame
+            return self.df
 
     def save_data(self) -> None:
-        """
-        Сохраняет данные из DataFrame в CSV-файл.
-        """
         self.df.to_csv(self.filename, index=False)
 
     def add_entry(self, date: str, category: str, amount: float, description: str) -> None:
-        """
-        Добавляет новую финансовую запись.
-
-        Args:
-            date (str): Дата записи.
-            category (str): Категория записи (Доход или Расход).
-            amount (float): Сумма записи.
-            description (str): Описание записи.
-        """
         try:
             new_id = len(self.df) + 1
-            new_record = {'ID': new_id, 'Date': date, 'Category': category, 'Amount': amount,
-                          'Description': description}
-            new_record_df = pd.DataFrame([new_record])  # Создание DataFrame из новой записи
-            # Объединение DataFrame'ов
-            self.df = pd.concat([self.df, new_record_df], ignore_index=True)
-            # Переупорядочивание столбцов
-            self.df = self.df[['ID', 'Date', 'Category', 'Amount', 'Description']]
-            # Сохранение данных
+            new_record = {'Date': date, 'Category': category, 'Amount': amount, 'Description': description}
+            self.df = pd.concat([self.df, pd.DataFrame([new_record])], ignore_index=True)
             self.save_data()
             print("Запись добавлена успешно.")
         except Exception as e:
@@ -76,38 +50,17 @@ class FinanceManager:
 
     def edit_record(self, record_id: int, new_date: str, new_category: str, new_amount: float,
                     new_description: str) -> None:
-        """
-        Редактирует существующую финансовую запись.
-
-        Args:
-            record_id (int): Индекс записи для редактирования.
-            new_date (str): Новая дата записи.
-            new_category (str): Новая категория записи.
-            new_amount (float): Новая сумма записи.
-            new_description (str): Новое описание записи.
-        """
         if record_id in self.df.index:
-            print("Before edit:")
-            print(self.df.loc[record_id])
-
             self.df.at[record_id, 'Date'] = new_date
             self.df.at[record_id, 'Category'] = new_category
             self.df.at[record_id, 'Amount'] = new_amount
             self.df.at[record_id, 'Description'] = new_description
             self.save_data()
-            print("After edit:")
-            print(self.df.loc[record_id])
-
             print("Запись успешно отредактирована.")
         else:
             print("Запись с таким ID не найдена.")
 
     def show_wallet_balance(self) -> tuple:
-        """
-        Показывает текущий баланс кошелька.
-
-        Выводит общий баланс, общий доход и общие расходы.
-        """
         if self.df.empty:
             print("Нет данных для отображения баланса.")
             return 0, 0, 0
@@ -124,31 +77,20 @@ class FinanceManager:
 
     def search_records(self, category: Optional[str] = None, date: Optional[str] = None,
                        amount: Optional[float] = None, record_id: Optional[int] = None) -> pd.DataFrame:
-        """
-        Поиск финансовых записей по заданным критериям.
-
-        Args:
-            category (str, optional): Категория для поиска.
-            date (str, optional): Дата для поиска.
-            amount (float, optional): Сумма для поиска.
-            record_id (int, optional): ID записи для поиска.
-
-        Returns:
-            pd.DataFrame: DataFrame с результатами поиска.
-        """
         filtered_df = self.df.copy()
 
         if category is not None:
             filtered_df = filtered_df[filtered_df['Category'].str.lower() == category.lower()]
 
         if date is not None:
-            filtered_df = filtered_df[filtered_df['Date'] == pd.to_datetime(date)]
+            date = pd.to_datetime(date).date()  # Convert to date object
+            filtered_df = filtered_df[filtered_df['Date'].dt.date == date]
 
         if amount is not None:
             filtered_df = filtered_df[filtered_df['Amount'] == amount]
 
         if record_id is not None:
-            filtered_df = filtered_df.loc[[record_id]] if record_id in filtered_df.index else pd.DataFrame()
+            filtered_df = filtered_df.iloc[[record_id]] if record_id < len(filtered_df) else pd.DataFrame()
 
         print("Filtered DataFrame:")
         print(filtered_df)

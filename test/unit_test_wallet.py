@@ -18,7 +18,7 @@ class TestFinanceManager(unittest.TestCase):
         os.remove(self.temp_file.name)
 
     def test_load_data(self):
-        self.assertTrue(self.manager.df.empty)
+        self.assertEqual(len(self.manager.df), 0)
 
         mock_data = (
             "Дата:2023-05-01\n"
@@ -39,7 +39,7 @@ class TestFinanceManager(unittest.TestCase):
 
         self.manager.add_entry(date, category, amount, description)
         self.assertEqual(len(self.manager.df), 1)
-        self.assertEqual(self.manager.df.iloc[0]["Date"], pd.to_datetime(date))
+        self.assertEqual(self.manager.df.iloc[0]["Date"].date(), pd.to_datetime(date).date())
         self.assertEqual(self.manager.df.iloc[0]["Category"], category)
         self.assertEqual(self.manager.df.iloc[0]["Amount"], amount)
         self.assertEqual(self.manager.df.iloc[0]["Description"], description)
@@ -62,7 +62,7 @@ class TestFinanceManager(unittest.TestCase):
         index = 0
 
         self.manager.edit_record(index, new_date, new_category, new_amount, new_description)
-        self.assertEqual(self.manager.df.iloc[index]["Date"], pd.to_datetime(new_date))
+        self.assertEqual(self.manager.df.iloc[index]["Date"].date(), pd.to_datetime(new_date).date())
         self.assertEqual(self.manager.df.iloc[index]["Category"], new_category)
         self.assertEqual(self.manager.df.iloc[index]["Amount"], new_amount)
         self.assertEqual(self.manager.df.iloc[index]["Description"], new_description)
@@ -73,7 +73,7 @@ class TestFinanceManager(unittest.TestCase):
             "Категория:Доход\n"
             "Сумма:1000\n"
             "Описание:Зарплата\n"
-            
+
             "Дата:2023-05-02\n"
             "Категория:Расход\n"
             "Сумма:500\n"
@@ -96,12 +96,12 @@ class TestFinanceManager(unittest.TestCase):
             "Категория:Доход\n"
             "Сумма:1000\n"
             "Описание:Зарплата\n"
-            
+
             "Дата:2023-05-02\n"
             "Категория:Расход\n"
             "Сумма:500\n"
             "Описание:Покупки\n"
-            
+
             "Дата:2023-05-03\n"
             "Категория:Доход\n"
             "Сумма:1500\n"
